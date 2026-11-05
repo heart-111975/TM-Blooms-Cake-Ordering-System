@@ -1,0 +1,22 @@
+# Environment and database credentials
+.env
+.env.*
+!.env.example
+
+# Local database files and backups
+*.sql
+*.sqlite
+*.db
+
+# Temporary files
+*.log
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+# Local database configuration
+db.php
