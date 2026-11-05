@@ -1,3 +1,4 @@
+
 <?php
 date_default_timezone_set('Asia/Manila');
 
@@ -15,7 +16,7 @@ try {
     );
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    die("Database connection failed. Please check your database settings.");
 }
 
 $success = false;
@@ -42,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $quantity = (int)($_POST["quantity"] ?? 0);
     $pickup = $_POST["pickup_date"] ?? "";
 
-    // VALIDATION
     if (
         $customer === "" ||
         !preg_match('/^\+639[0-9]{9}$/', $contact) ||
@@ -51,7 +51,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $quantity > 50 ||
         $pickup === ""
     ) {
-
         $error = "Please complete all required fields and enter a valid Philippine mobile number.";
 
     } else {
@@ -64,7 +63,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             date("Y-m-d", $pickupTimestamp) !== $pickup ||
             $pickupTimestamp < $today
         ) {
-
             $error = "Please select a valid pickup date.";
 
         } elseif (date("N", $pickupTimestamp) == 7) {
@@ -75,11 +73,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             try {
 
-                // COMPUTE TOTAL PRICE
                 $basePrice = $cakes[$cake];
                 $price = $basePrice * $quantity;
 
-                // INSERT ORDER
                 $stmt = $conn->prepare("
                     INSERT INTO orders
                     (
@@ -117,7 +113,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 $success = true;
 
-                // ORDER DETAILS
                 $orderDetails = [
                     "customer" => $customer,
                     "contact" => $contact,
@@ -128,9 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ];
 
             } catch (PDOException $e) {
-
                 $error = "Your order could not be submitted. Please check your database connection.";
-
             }
         }
     }
@@ -139,7 +132,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -149,9 +141,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-/* GENERAL */
+<style>
 
 * {
     margin: 0;
@@ -165,6 +157,7 @@ html, body {
     min-height: 100%;
     background: #fffafa;
     color: #4a3b40;
+    scroll-behavior: smooth;
 }
 
 /* APP LAYOUT */
@@ -174,64 +167,140 @@ html, body {
     min-height: 100vh;
 }
 
-/* SIDEBAR */
+/* BEAUTIFUL SIDEBAR */
 
 .sidebar {
-    width: 240px;
+    width: 255px;
     height: 100vh;
     position: fixed;
     top: 0;
     left: 0;
-    background: #fff;
-    padding: 25px 20px;
+    background: linear-gradient(180deg, #fff0f4 0%, #fce3eb 55%, #fff7f9 100%);
+    padding: 28px 18px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
     flex-shrink: 0;
-    border-right: 1px solid #f0e1e5;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+    border-right: 1px solid #f2d3dd;
+    box-shadow: 5px 0 20px rgba(190, 105, 130, 0.07);
     z-index: 100;
     overflow-y: auto;
 }
+
 .sidebar-brand {
+    text-align: center;
+    padding: 10px 5px 28px;
+    border-bottom: 1px solid #edcbd6;
+    margin-bottom: 25px;
+}
+
+.sidebar-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #d46a84;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 5px 18px rgba(190, 105, 130, 0.13);
+}
+
+.sidebar-brand h2 {
+    color: #a94f6c;
     font-size: 22px;
     font-weight: 700;
-    color: #d46a84;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+}
+
+.sidebar-brand p {
+    color: #ad7b8c;
+    font-size: 10px;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
+.sidebar-label {
+    color: #b17b8d;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    padding: 0 12px;
+    margin-bottom: 12px;
 }
 
 .sidebar-menu {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 9px;
 }
 
 .sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
     text-decoration: none;
-    color: #6b535b;
+    color: #795766;
     font-weight: 500;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: 0.2s;
+    padding: 14px 15px;
+    border-radius: 13px;
+    font-size: 13px;
+    transition: all 0.25s ease;
 }
 
-.sidebar-menu a:hover,
+.sidebar-menu a i {
+    width: 21px;
+    text-align: center;
+    font-size: 17px;
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.8);
+    color: #c45f7d;
+    transform: translateX(4px);
+}
+
 .sidebar-menu a.active {
-    background: #fdf2f4;
-    color: #d46a84;
+    background: linear-gradient(110deg, #df8da7, #cf718f);
+    color: #ffffff;
+    box-shadow: 0 5px 13px rgba(205, 116, 146, 0.22);
+}
+
+.sidebar-menu a.active:hover {
+    transform: translateX(3px);
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding: 18px 10px 5px;
+    border-top: 1px solid #edcbd6;
+    text-align: center;
+}
+
+.sidebar-bottom p {
+    color: #ad7b8c;
+    font-size: 10px;
+    line-height: 1.8;
+}
+
+.sidebar-bottom i {
+    color: #d77e9b;
+    margin: 0 3px;
 }
 
 /* MAIN CONTENT */
+
 .main-content {
-    margin-left: 240px;
-    width: calc(100% - 240px);
+    margin-left: 255px;
+    width: calc(100% - 255px);
     min-width: 0;
     min-height: 100vh;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
+
 /* TOP NAVBAR */
 
 .navbar {
@@ -334,6 +403,7 @@ html, body {
     box-shadow: 0 10px 30px rgba(212, 106, 132, 0.15);
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .hero-image-box img {
@@ -525,8 +595,6 @@ html, body {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
 }
-
-/* CONTACT NUMBER */
 
 #contact_number {
     letter-spacing: 0.5px;
@@ -733,9 +801,20 @@ footer {
 
 /* RESPONSIVE */
 
+@media (max-width: 1200px) {
+    .products {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 1024px) {
     .products {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-image-box {
+        width: 320px;
+        height: 250px;
     }
 }
 
@@ -747,24 +826,71 @@ footer {
 
     .sidebar {
         width: 100%;
-        padding: 15px;
+        height: auto;
+        min-height: unset;
+        position: relative;
+        padding: 12px 15px;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        text-align: left;
+    }
+
+    .sidebar-logo {
+        width: 43px;
+        height: 43px;
+        margin: 0;
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .sidebar-brand h2 {
+        font-size: 15px;
+    }
+
+    .sidebar-brand p {
+        font-size: 8px;
+    }
+
+    .sidebar-label,
+    .sidebar-bottom {
+        display: none;
     }
 
     .sidebar-menu {
         flex-direction: row;
+        gap: 5px;
     }
 
     .sidebar-menu a {
-        padding: 9px;
-        font-size: 12px;
+        padding: 10px;
+        font-size: 11px;
+        gap: 7px;
+    }
+
+    .sidebar-menu a i {
+        font-size: 14px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
     }
 
     .hero {
         flex-direction: column;
         text-align: center;
+        padding: 45px 5%;
     }
 
     .hero-content {
@@ -774,6 +900,7 @@ footer {
     .hero-image-box {
         width: 100%;
         max-width: 320px;
+        height: 240px;
         margin: auto;
     }
 
@@ -795,7 +922,7 @@ footer {
     }
 
     .products {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .order-container {
@@ -816,6 +943,49 @@ footer {
     }
 }
 
+@media (max-width: 480px) {
+
+    .sidebar {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .sidebar-brand {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sidebar-menu {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sidebar-menu a {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .products {
+        grid-template-columns: 1fr;
+    }
+
+    .section {
+        padding: 35px 5%;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .nav-links a {
+        font-size: 12px;
+    }
+
+    .detail-row {
+        flex-wrap: wrap;
+    }
+}
+
 </style>
 </head>
 
@@ -826,12 +996,42 @@ footer {
     <!-- SIDEBAR -->
     <aside class="sidebar">
 
-        <div class="sidebar-brand">T&M BLOOMS</div>
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-cake-candles"></i>
+            </div>
+
+            <h2>T&M BLOOMS</h2>
+            <p>CAKE ORDERING SYSTEM</p>
+
+        </div>
+
+        <div class="sidebar-label">
+            MAIN MENU
+        </div>
 
         <nav class="sidebar-menu">
-            <a href="dashboard.php">Dashboard</a>
-            <a href="index.php" class="active">Store / Orders</a>
+
+            <a href="dashboard.php">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="index.php" class="active">
+                <i class="fa-solid fa-store"></i>
+                <span>Store / Orders</span>
+            </a>
+
         </nav>
+
+        <div class="sidebar-bottom">
+            <p>
+                Made with <i class="fa-solid fa-heart"></i>
+                for every celebration.
+            </p>
+            <p>© <?= date('Y') ?> T&M Blooms</p>
+        </div>
 
     </aside>
 
@@ -1135,7 +1335,6 @@ footer {
 
                         </div>
 
-                        <!-- CONTACT NUMBER WITH AUTOMATIC +639 -->
                         <div class="form-group">
 
                             <label>Contact Number</label>
@@ -1219,6 +1418,7 @@ footer {
                         </div>
 
                         <button type="submit" class="submit-btn">
+                            <i class="fa-solid fa-heart"></i>
                             Submit Cake Order
                         </button>
 
@@ -1260,11 +1460,9 @@ function formatContactNumber(input) {
 
     let value = input.value;
 
-    // Keep +639 as the fixed prefix
     if (!value.startsWith("+639")) {
         value = value.replace(/[^0-9]/g, "");
 
-        // Remove the prefix digits if already typed
         if (value.startsWith("639")) {
             value = value.substring(3);
         } else if (value.startsWith("09")) {
@@ -1277,10 +1475,8 @@ function formatContactNumber(input) {
         return;
     }
 
-    // Allow only numbers after +639
     let remainingDigits = value.substring(4).replace(/[^0-9]/g, "");
 
-    // Limit to 9 digits
     remainingDigits = remainingDigits.substring(0, 9);
 
     input.value = "+639" + remainingDigits;
