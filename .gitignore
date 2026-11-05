@@ -1,12 +1,21 @@
+
 # Environment and database credentials
 .env
 .env.*
 !.env.example
 
+# Local database configuration
+db.php
+
 # Local database files and backups
-*.sql
 *.sqlite
 *.db
+
+# Ignore SQL files by default
+*.sql
+
+# Allow the project database export
+!Cake_Ordering_System.sql
 
 # Temporary files
 *.log
@@ -18,5 +27,3 @@ Thumbs.db
 
 # Git
 .git/
-# Local database configuration
-db.php
